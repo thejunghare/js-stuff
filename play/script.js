@@ -1,29 +1,59 @@
-const input = document.getElementById('task-input');
-const form  = document.getElementById('task-form');
-const list  = document.getElementById('task-list');
+let existingTaskId = null;
 
-// Save and render on submit
-form.addEventListener('submit', e => {
-  e.preventDefault();
-  const task = input.value.trim();
-  if (!task) return;
+document.getElementById('add-task-btn').addEventListener('click', (e) => {
+    let taskInput = document.getElementById('task-input').value;
+    console.log(taskInput);
 
-  // keep an array of tasks in localStorage
-  const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-  tasks.push(task);
-  localStorage.setItem('tasks', JSON.stringify(tasks));
+    // get in array
+    let tasks = JSON.parse(localStorage.getItem('task'))|| [];
 
-  addTaskToDOM(task);
-  input.value = '';
-});
+    console.log(tasks);
 
-// helper to create a <p> tag and append it
-function addTaskToDOM(text) {
-  const p = document.createElement('p');
-  p.textContent = text;
-  list.appendChild(p);
+    if (existingTaskId !== null){
+        tasks[existingTaskId] = taskInput;
+        existingTaskId = null;
+    }else {
+        tasks.push(taskInput);
+    }
+    // set in text
+    localStorage.setItem('task', JSON.stringify(tasks));
+
+    renderTask(tasks)
+})
+
+function deleteTask(index){
+    let tasks = JSON.parse(localStorage.getItem('task'));
+    tasks.splice(index, 1);
+    localStorage.setItem('task', JSON.stringify(tasks));
+    renderTask(tasks)
 }
 
-// read and render all tasks on page load
-const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-savedTasks.forEach(addTaskToDOM);
+function renderTask(tasks) {
+    let tasksList = document.getElementById('task-list');
+    tasksList.innerHTML = '';
+
+    tasks.forEach((task, index) => {
+        const liTag = document.createElement('li');
+        const deleteButton = document.createElement('button');
+        const updateButton = document.createElement('button');
+
+        deleteButton.textContent = 'Delete Button';
+        updateButton.textContent = 'Edit Task';
+
+        liTag.innerText = task;
+        liTag.appendChild(deleteButton);
+        liTag.appendChild(updateButton);
+        tasksList.appendChild(liTag);
+
+
+        deleteButton.addEventListener('click', (e) => {
+            deleteTask(index);
+        })
+
+        updateButton.addEventListener('click', (e) => {
+            console.log('edit clicked index:', index);
+            document.getElementById('task-input').value =  task;
+            existingTaskId = index;
+        })
+    })
+}
